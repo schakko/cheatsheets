@@ -3,7 +3,7 @@
 
 	docker exec -it kubelet /bin/bash
 
-## List volumes
+## List mount points
   
 	# list container id
 	docker ps
