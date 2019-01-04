@@ -25,7 +25,14 @@
 
 	docker logs -f kubelet
 	docker logs -f kube-proxy
-  
+## Show secrets
+
+	kubectl get secrets --namespace ${NAMESPACE}
+	kubectl get secrets/${SECRET_NAME} --namespace ${NAMESPACE} -o yaml
+	base64 --decode ${SECRET_KEY}
+	# one-liner:
+	# kubectl get secrets/${SECRET_NAME} --namespace ${NAMESPACE} -o yaml | grep ${SECRET_KEY} | sed 's/\s\s*/ /g' | cut -d' ' -f3 | base64 --decode
+
 # Rancher
 ## Download API keys
 - Log in to Rancher
