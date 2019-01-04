@@ -57,9 +57,17 @@ See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
 	~/.hal/default/service-settings/gate.yml \
 	~/.hal/default/service-settings/deck.yml
 	
+	hal config security ui edit \
+		--override-base-url https://spinnaker.sub.domain.com
+
+	hal config security api edit \
+		--override-base-url https://spinnaker-api.sub.domain.com
+		
 	hal deploy apply
 
+
 ## Add nginx ingress
+See https://medium.com/parkbee-tech/spinnaker-installation-on-kubernetes-using-new-halyard-based-helm-chart-d0cc7f0b8fd0
 
 	apiVersion: extensions/v1beta1
 	kind: Ingress
@@ -73,14 +81,10 @@ See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
 	  - host: spinnaker.sub.domain.com
 	    http:
 	      paths:
-	      - path: /*
+	      - path: /
 		backend:
 		  serviceName: spin-deck
 		  servicePort: 9000
-	      - path: /gate/*
-		backend:
-		  serviceName: spin-gate
-		  servicePort: 8084
 	---
 	# Addresses issue https://github.com/spinnaker/spinnaker/issues/1934
 	apiVersion: extensions/v1beta1
@@ -92,10 +96,10 @@ See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
 	    ingress.kubernetes.io/rewrite-target: /auth/
 	spec:
 	  rules:
-	  - host: spinnaker.sub.domain.com
+	  - host: spinnaker-api.sub.domain.com
 	    http:
 	      paths:
-	      - path: /auth/*
+	      - path: /
 		backend:
 		  serviceName: spin-gate
 		  servicePort: 8084
