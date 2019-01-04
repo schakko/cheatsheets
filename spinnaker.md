@@ -32,8 +32,8 @@ Be aware of wrong file permission with Docker in WSL!
 	hal config features edit --artifacts true
 	
 ## Storage Service: Minio
-- Fetch Minio endpoint URL from Kubernetes logs
-- Fetch MINIO_ACCESS_KEY and MINIO_SECRET_KEY from Kubernetes Minio environment
+Fetch Minio endpoint URL from Kubernetes logs and MINIO_ACCESS_KEY and MINIO_SECRET_KEY from Kubernetes Minio environment
+
 
 	export ENDPOINT=
 	export MINIO_ACCESS_KEY=
@@ -43,12 +43,13 @@ Be aware of wrong file permission with Docker in WSL!
 	echo "spinnaker.s3.versioning: false" > ~/.hal/default/profiles/front50-local.yml
 	
 	echo $MINIO_SECRET_KEY | hal config storage s3 edit --endpoint $ENDPOINT \
-    --access-key-id $MINIO_ACCESS_KEY \
-    --secret-access-key # will be read on STDIN to avoid polluting your
-                        # ~/.bash_history with a secret
+	--access-key-id $MINIO_ACCESS_KEY \
+	--secret-access-key # will be read on STDIN to avoid polluting your 
+	# ~/.bash_history with a secret
 
 	hal config storage edit --type s3
-	
+
+
 ## Deploy
 
 	hal version list
