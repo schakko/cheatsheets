@@ -69,6 +69,8 @@ See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
 ## Add nginx ingress
 See https://medium.com/parkbee-tech/spinnaker-installation-on-kubernetes-using-new-halyard-based-helm-chart-d0cc7f0b8fd0
 
+	# paste this to spinnaker-nginx-ingress.yml
+	
 	apiVersion: extensions/v1beta1
 	kind: Ingress
 	metadata:
@@ -104,6 +106,11 @@ See https://medium.com/parkbee-tech/spinnaker-installation-on-kubernetes-using-n
 		  serviceName: spin-gate
 		  servicePort: 8084
 
+
+Apply this deployment:
+
+	kubectl apply -f spinnaker-nginx-ingress.yml --namespace spinnaker
+	
 ## Deploy
 
 	hal version list
