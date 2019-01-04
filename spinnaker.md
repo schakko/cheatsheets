@@ -59,6 +59,47 @@ See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
 	
 	hal deploy apply
 
+## Add nginx ingress
+
+	apiVersion: extensions/v1beta1
+	kind: Ingress
+	metadata:
+	  name: spin-ingress
+	  namespace: spinnaker
+	  annotations:
+	    ingress.kubernetes.io/rewrite-target: /
+	spec:
+	  rules:
+	  - host: spinnaker.sub.domain.com
+	    http:
+	      paths:
+	      - path: /*
+		backend:
+		  serviceName: spin-deck
+		  servicePort: 9000
+	      - path: /gate/*
+		backend:
+		  serviceName: spin-gate
+		  servicePort: 8084
+	---
+	# Addresses issue https://github.com/spinnaker/spinnaker/issues/1934
+	apiVersion: extensions/v1beta1
+	kind: Ingress
+	metadata:
+	  name: spin-auth-ingress
+	  namespace: spinnaker
+	  annotations:
+	    ingress.kubernetes.io/rewrite-target: /auth/
+	spec:
+	  rules:
+	  - host: spinnaker.sub.domain.com
+	    http:
+	      paths:
+	      - path: /auth/*
+		backend:
+		  serviceName: spin-gate
+		  servicePort: 8084
+
 ## Deploy
 
 	hal version list
