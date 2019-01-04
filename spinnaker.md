@@ -50,6 +50,15 @@ Fetch Minio endpoint URL from Kubernetes logs and MINIO_ACCESS_KEY and MINIO_SEC
 	hal config storage edit --type s3
 
 
+## Expose on public port
+See https://blog.spinnaker.io/exposing-spinnaker-to-end-users-4808bc936698
+
+	echo "host: 0.0.0.0" | tee \
+	~/.hal/default/service-settings/gate.yml \
+	~/.hal/default/service-settings/deck.yml
+	
+	hal deploy apply
+
 ## Deploy
 
 	hal version list
