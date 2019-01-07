@@ -110,6 +110,12 @@ See https://medium.com/parkbee-tech/spinnaker-installation-on-kubernetes-using-n
 Apply this deployment:
 
 	kubectl apply -f spinnaker-nginx-ingress.yml --namespace spinnaker
+
+## Configure providers
+### Docker registry (e.g. Nexus)
+
+	hal config provider docker-registry account add docker --address https://registry.sub.domain.com --username=${USERNAME} --password
+	# password must be entered
 	
 ## Deploy
 
