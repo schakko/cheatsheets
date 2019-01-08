@@ -130,3 +130,50 @@ Apply this deployment:
 	hal backup create
 	cp ~/.hal/*.tar /to/any/writeable/directory/in/docker/container
 	
+# Bugs
+## Wrong .kube/config file after restoring a halyard backup
+
+After running `hal backup restore --backup-path=${MY_BACKUP}` the `hal deploy apply` command failed with
+
+	! ERROR Failed check for Namespace/spinnaker in null
+	Error in configuration: context was not found for specified context: ${VALID_CONTEXT_NAME}
+	
+I could verify with help of
+
+	kubectl config get-contexts
+	kubectl get ns
+	
+that the context was valid and could be used.
+
+When checking halyard daemon's log, I realized that
+
+	2019-01-08 22:40:24.836  INFO 6 --- [tionScheduler-1] c.n.s.h.core.job.v1.JobExecutorLocal     : Executing 95d3f6f9-626f-4ed3-8cb5-03b642b853f4with tokenized command: [kubectl, --context, ${VALID_CONTEXT_NAME}, --kubeconfig, /home/spinnaker/.hal/default/staging/dependencies/603017638-2054179555-config, get, Namespace, spinnaker]
+	2019-01-08 22:40:25.535  INFO 6 --- [      Thread-12] c.n.s.h.core.job.v1.JobExecutorLocal     : 95d3f6f9-626f-4ed3-8cb5-03b642b853f4 has terminated with exit code 1
+	2019-01-08 22:40:25.538  INFO 6 --- [      Thread-12] c.n.s.h.core.tasks.v1.TaskRepository     : Task [Apply deployment] (a6d99382-7029-43f2-a45d-492e33a9206c) - RUNNING failed with HalException:
+
+	com.netflix.spinnaker.halyard.core.error.v1.HalException: Failed check for Namespace/spinnaker in null
+	Error in configuration: context was not found for specified context: ${VALID_CONTEXT_NAME}
+
+
+		at com.netflix.spinnaker.halyard.deploy.spinnaker.v1.service.distributed.kubernetes.v2.KubernetesV2Utils.exists(KubernetesV2Utils.java:101) ~[halyard-deploy.jar:na]
+		at com.netflix.spinnaker.halyard.deploy.spinnaker.v1.service.distributed.kubernetes.v2.KubernetesV2Utils.exists(KubernetesV2Utils.java:62) ~[halyard-deploy.jar:na]
+		at com.netflix.spinnaker.halyard.deploy.deployment.v1.KubectlDeployer.lambda$deploy$0(KubectlDeployer.java:69) ~[halyard-deploy.jar:na]
+		at java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1382) ~[na:1.8.0_181]
+		at java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:580) ~[na:1.8.0_181]
+		at com.netflix.spinnaker.halyard.deploy.deployment.v1.KubectlDeployer.deploy(KubectlDeployer.java:45) ~[halyard-deploy.jar:na]
+		at com.netflix.spinnaker.halyard.deploy.deployment.v1.KubectlDeployer.deploy(KubectlDeployer.java:37) ~[halyard-deploy.jar:na]
+		at com.netflix.spinnaker.halyard.deploy.services.v1.DeployService.deploy(DeployService.java:287) ~[halyard-deploy.jar:na]
+		at com.netflix.spinnaker.halyard.controllers.v1.DeploymentController.lambda$deploy$14(DeploymentController.java:210) ~[halyard-web.jar:na]
+		at com.netflix.spinnaker.halyard.core.DaemonResponse$StaticRequestBuilder.build(DaemonResponse.java:127) ~[halyard-core.jar:na]
+		at com.netflix.spinnaker.halyard.core.tasks.v1.TaskRepository.lambda$submitTask$1(TaskRepository.java:48) ~[halyard-core.jar:na]
+		at java.lang.Thread.run(Thread.java:748) ~[na:1.8.0_181]
+		
+used the previously compiled configuration (`603017638-2054179555-config`), which in turn was compiled by halyard using the `~/.hal/config` file. Because of restoring the backup, the `kubeconfigFile` parameter in `~/.hal/config` has been resetted and pointed to a non-existing kube configuration, resulting in a missing context:
+
+    kubernetes:
+        kubeconfigFile: /home/spinnaker/.hal/.backup/required-files/2054179555-config
+
+I fixed the issue by simply resetting the kubeconfig-file to the default location and re-applying the deployment
+
+	hal config provider kubernetes account edit my_account --kubeconfig-file=/home/spinnaker/.kube/config
+	hal deploy apply
