@@ -130,6 +130,11 @@ Apply this deployment:
 	hal backup create
 	cp ~/.hal/*.tar /to/any/writeable/directory/in/docker/container
 	
+# Halyard
+## Latest Docker image for Halyard
+
+The latest Halyard Docker image is tagged with "nightly". A full list of images is available at https://console.cloud.google.com/gcr/images/spinnaker-marketplace/GLOBAL/halyard
+
 # Bugs
 ## Wrong .kube/config file after restoring a halyard backup
 
