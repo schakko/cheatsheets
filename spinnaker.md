@@ -135,6 +135,53 @@ Apply this deployment:
 
 The latest Halyard Docker image is tagged with "nightly". A full list of images is available at https://console.cloud.google.com/gcr/images/spinnaker-marketplace/GLOBAL/halyard
 
+# How to
+##  How to combine a Jenkins-generated Docker image with a Kubernetes v2 deployment manifest
+
+- Make sure you are on the latest Halyard-build (20190108 or later) so that https://github.com/spinnaker/spinnaker/issues/3401 is included
+- Use `hal config artifact templates add ez-test --template-path /path/to/template` to deploy a template at the location `/path/to/template`:
+
+	  [
+		{% for artifact in properties.artifacts %}
+		{
+			"type": "{{ artifact.type }}",
+			"reference": "{{ artifact.reference }}",
+			"name": "{{ artifact.name }}",
+			"version": "{{ artifact.version }}"
+		}
+		{% if not loop.last %},{% endif %}
+		{% endfor %}
+	  ]
+
+into Spinnaker's *echo* microservice (`hal deploy apply`). 
+
+- Configure your Spinnaker pipeline trigger for Jenkins so that configuration option*Property File* is set to *spinnaker-properties.yml*.
+- After Jenkins has built your Docker image Jenkins has to archive the file *spinnaker-artifacts.yml* with the following content:
+
+	  artifacts:
+	  - type: docker/image
+	    reference: registry.domain.com/org/static-website-sample:ed53e33f-git
+	    name: registry.domain.com/org/static-website-sample
+	    version: ed53e33f-git
+	  messageFormat: basicArtifacts
+	  #see https://github.com/spinnaker/spinnaker/issues/3401#issuecomment-450695043
+	  customFormat: 'true'
+
+- In your Spinnaker's pipeline configuration, you need to add an *Expected artifact* with *Type=docker/image* and *Name=registry.domain.com/org/static-website-sample*. Leave the *Version* field empty. Enable *Use Default Artifact* and enter the values a second time. The *Name* must match the *name* attribute in your spinnaker-artifacts.yml. The *Expected artifact* is required so that next stages can work with the artifact. In addition to that, you have to make sure that *registry.domain.com* is a valid Docker registry in your halyard configuration so Spinnaker can download the artifact:
+
+	  dockerRegistry:
+	      enabled: true
+	      accounts:
+	      - name: docker
+		requiredGroupMembership: []
+		providerVersion: V1
+		permissions: {}
+		address: https://registry.domain.com/
+	
+- In your *Deploy (Manifest)* stage of the pipeline, you have to bind the previously added artifact in the *Req. Artifacts To Bind* list.
+
+After the Jenkins build has finished, Spinnaker fetches the *spinnaker-artifacts.yml*, converts the YAML file to the required JSON template, binds any artifact present in the JSON template to the pipeline and overrides the *Expected artifact* with the artifact from the JSON file by using the relation between *JSON:name* and *Expected Artifact:Name*.
+
 # Bugs
 ## Wrong .kube/config file after restoring a halyard backup
 
