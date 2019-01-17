@@ -35,8 +35,8 @@
 
 ## Create Namespace
 
-	# Create file namespace-demo.yml
-	# ---snip---
+Create file namespace-demo.yml
+
 	{
 	  "kind": "Namespace",
 	  "apiVersion": "v1",
@@ -47,8 +47,9 @@
 	    }
 	  }
 	}
-	# ---snap---
-	
+
+Execute
+
 	kubectl create -f namespace-demo.yml
 	
 # Rancher
