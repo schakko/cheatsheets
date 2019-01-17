@@ -33,6 +33,24 @@
 	# one-liner:
 	# kubectl get secrets/${SECRET_NAME} --namespace ${NAMESPACE} -o yaml | grep ${SECRET_KEY} | sed 's/\s\s*/ /g' | cut -d' ' -f3 | base64 --decode
 
+## Create Namespace
+
+	# Create file namespace-demo.yml
+	# ---snip---
+	{
+	  "kind": "Namespace",
+	  "apiVersion": "v1",
+	  "metadata": {
+	    "name": "demo",
+	    "labels": {
+	      "name": "demo"
+	    }
+	  }
+	}
+	# ---snap---
+	
+	kubectl create -f namespace-demo.yml
+	
 # Rancher
 ## Download API keys
 - Log in to Rancher
